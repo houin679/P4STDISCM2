@@ -19,7 +19,7 @@ const Index = () => {
     title = "Student Dashboard";
     description = "View your courses and grades.";
     actions = (
-      <div className="flex gap-4">
+      <div className="flex justify-between w-full">
         <Button asChild>
           <Link to="/courses">Choose Courses</Link>
         </Button>
