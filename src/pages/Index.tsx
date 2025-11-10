@@ -21,7 +21,7 @@ const Index = () => {
     actions = (
       <div className="flex gap-4">
         <Button asChild>
-          <Link to="/courses">View Courses</Link>
+          <Link to="/courses">Choose Courses</Link>
         </Button>
         <Button asChild variant="outline">
           <Link to="/grades">View Grades</Link>
