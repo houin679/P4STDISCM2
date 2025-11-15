@@ -29,7 +29,7 @@ const Header = () => {
       path: "/faculty/courses",
       label: "Course Management",
       icon: LayoutList,
-      roles: ["faculty"],
+      roles: ["course_audit_admin"],
     },
   ];
 

@@ -55,6 +55,7 @@ const Login = () => {
                   <SelectContent>
                     <SelectItem value="student">Student</SelectItem>
                     <SelectItem value="faculty">Faculty</SelectItem>
+                    <SelectItem value="course_audit_admin">Course Audit Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

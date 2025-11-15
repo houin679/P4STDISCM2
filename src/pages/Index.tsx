@@ -30,13 +30,20 @@ const Index = () => {
     );
   } else if (userRole === "faculty") {
     title = "Faculty Dashboard";
-    description = "Manage grade submissions and course catalog.";
+    description = "Manage grade submissions.";
     actions = (
-      <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+      <div className="flex flex-col sm:flex-row justify-center w-full gap-4">
         <Button asChild>
           <Link to="/faculty/upload">Upload Grades</Link>
         </Button>
-        <Button asChild variant="outline">
+      </div>
+    );
+  } else if (userRole === "course_audit_admin") {
+    title = "Course Audit Admin Dashboard";
+    description = "Manage the entire course catalog.";
+    actions = (
+      <div className="flex flex-col sm:flex-row justify-center w-full gap-4">
+        <Button asChild size="lg">
           <Link to="/faculty/courses">Manage Courses</Link>
         </Button>
       </div>

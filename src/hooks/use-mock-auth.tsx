@@ -1,6 +1,6 @@
 import React from "react";
 
-export type UserRole = "unauthenticated" | "student" | "faculty";
+export type UserRole = "unauthenticated" | "student" | "faculty" | "course_audit_admin";
 
 interface MockAuthContextType {
   userRole: UserRole;
