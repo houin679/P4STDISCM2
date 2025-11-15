@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useMockAuth } from "@/hooks/use-mock-auth";
-import { LogIn, LogOut, BookOpen, GraduationCap, Upload } from "lucide-react";
+import { LogIn, LogOut, BookOpen, GraduationCap, Upload, LayoutList } from "lucide-react";
 
 const Header = () => {
   const { userRole, logout } = useMockAuth();
@@ -23,6 +23,12 @@ const Header = () => {
       path: "/faculty/upload",
       label: "Grade Upload",
       icon: Upload,
+      roles: ["faculty"],
+    },
+    {
+      path: "/faculty/courses",
+      label: "Course Management",
+      icon: LayoutList,
       roles: ["faculty"],
     },
   ];

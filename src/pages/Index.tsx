@@ -30,11 +30,16 @@ const Index = () => {
     );
   } else if (userRole === "faculty") {
     title = "Faculty Dashboard";
-    description = "Manage grade submissions for your courses.";
+    description = "Manage grade submissions and course catalog.";
     actions = (
-      <Button asChild size="lg">
-        <Link to="/faculty/upload">Upload Grades</Link>
-      </Button>
+      <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+        <Button asChild>
+          <Link to="/faculty/upload">Upload Grades</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/faculty/courses">Manage Courses</Link>
+        </Button>
+      </div>
     );
   }
 
