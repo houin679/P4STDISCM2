@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showSuccess, showError } from "@/utils/toast";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Lock } from "lucide-react";
 
 interface Course {
   id: string;
@@ -22,6 +22,9 @@ const initialMockCourses: Course[] = [
   { id: "DS310", name: "Distributed Systems", instructor: "Dr. Dyad", capacity: 30 },
 ];
 
+// Mock identity of the currently logged-in faculty member for authorization checks
+const CURRENT_FACULTY_ID = "Dr. Dyad";
+
 const FacultyCourseManagement = () => {
   const [courses, setCourses] = useState<Course[]>(initialMockCourses);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -29,7 +32,7 @@ const FacultyCourseManagement = () => {
   const [formState, setFormState] = useState<Omit<Course, 'id'> & { id: string }>({
     id: "",
     name: "",
-    instructor: "",
+    instructor: CURRENT_FACULTY_ID, // Default new courses to the current faculty
     capacity: 0,
   });
 
@@ -37,7 +40,7 @@ const FacultyCourseManagement = () => {
     if (editingCourse) {
       setFormState(editingCourse);
     } else {
-      setFormState({ id: "", name: "", instructor: "", capacity: 0 });
+      setFormState({ id: "", name: "", instructor: CURRENT_FACULTY_ID, capacity: 0 });
     }
   }, [editingCourse]);
 
@@ -56,10 +59,22 @@ const FacultyCourseManagement = () => {
       showError("Please fill in all fields correctly.");
       return;
     }
+    
+    // Authorization check: Only allow saving if the instructor is the current faculty or if it's a new course
+    if (editingCourse && editingCourse.instructor !== CURRENT_FACULTY_ID) {
+        showError("Authorization failed: You can only edit courses you teach.");
+        setIsDialogOpen(false);
+        setEditingCourse(null);
+        return;
+    }
+    
+    // Ensure the instructor field is set to the current faculty ID when adding/editing
+    const courseToSave = { ...formState, instructor: CURRENT_FACULTY_ID, capacity: Number(formState.capacity) };
+
 
     if (editingCourse) {
       // Edit existing course
-      setCourses(courses.map(c => c.id === editingCourse.id ? { ...formState, capacity: Number(formState.capacity) } : c));
+      setCourses(courses.map(c => c.id === editingCourse.id ? courseToSave : c));
       showSuccess(`Course ${formState.id} updated successfully! (Mock Action)`);
     } else {
       // Add new course
@@ -67,7 +82,7 @@ const FacultyCourseManagement = () => {
         showError(`Course ID ${formState.id} already exists.`);
         return;
       }
-      setCourses([...courses, { ...formState, capacity: Number(formState.capacity) }]);
+      setCourses([...courses, courseToSave]);
       showSuccess(`Course ${formState.id} added successfully! (Mock Action)`);
     }
 
@@ -75,7 +90,12 @@ const FacultyCourseManagement = () => {
     setEditingCourse(null);
   };
 
-  const handleDeleteCourse = (courseId: string) => {
+  const handleDeleteCourse = (courseId: string, instructor: string) => {
+    if (instructor !== CURRENT_FACULTY_ID) {
+        showError("Authorization failed: You can only delete courses you teach.");
+        return;
+    }
+    
     if (confirm(`Are you sure you want to delete course ${courseId}?`)) {
       setCourses(courses.filter(c => c.id !== courseId));
       showSuccess(`Course ${courseId} deleted successfully! (Mock Action)`);
@@ -88,6 +108,10 @@ const FacultyCourseManagement = () => {
   };
 
   const openEditDialog = (course: Course) => {
+    if (course.instructor !== CURRENT_FACULTY_ID) {
+        showError("Authorization failed: You can only edit courses you teach.");
+        return;
+    }
     setEditingCourse(course);
     setIsDialogOpen(true);
   };
@@ -97,7 +121,7 @@ const FacultyCourseManagement = () => {
       <h1 className="text-3xl font-bold mb-6">Course Catalog Management</h1>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold">Current Courses</CardTitle>
+          <CardTitle className="text-2xl font-bold">Current Courses (Logged in as {CURRENT_FACULTY_ID})</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openAddDialog}>
@@ -142,12 +166,12 @@ const FacultyCourseManagement = () => {
                     <Label htmlFor="instructor" className="text-right">
                       Instructor
                     </Label>
+                    {/* Display the instructor name, but prevent editing since it's tied to the logged-in user */}
                     <Input
                       id="instructor"
-                      value={formState.instructor}
-                      onChange={handleFormChange}
-                      className="col-span-3"
-                      required
+                      value={CURRENT_FACULTY_ID}
+                      className="col-span-3 bg-muted/50"
+                      disabled
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -184,22 +208,33 @@ const FacultyCourseManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {courses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.id}</TableCell>
-                  <TableCell>{course.name}</TableCell>
-                  <TableCell>{course.instructor}</TableCell>
-                  <TableCell className="text-right">{course.capacity}</TableCell>
-                  <TableCell className="flex justify-center space-x-2">
-                    <Button variant="outline" size="icon" onClick={() => openEditDialog(course)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="destructive" size="icon" onClick={() => handleDeleteCourse(course.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {courses.map((course) => {
+                const isAuthorized = course.instructor === CURRENT_FACULTY_ID;
+                return (
+                  <TableRow key={course.id}>
+                    <TableCell className="font-medium">{course.id}</TableCell>
+                    <TableCell>{course.name}</TableCell>
+                    <TableCell>{course.instructor}</TableCell>
+                    <TableCell className="text-right">{course.capacity}</TableCell>
+                    <TableCell className="flex justify-center space-x-2">
+                      {isAuthorized ? (
+                        <>
+                          <Button variant="outline" size="icon" onClick={() => openEditDialog(course)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="icon" onClick={() => handleDeleteCourse(course.id, course.instructor)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button variant="ghost" size="icon" disabled title={`Managed by ${course.instructor}`}>
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
