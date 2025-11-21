@@ -8,33 +8,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showSuccess, showError } from "@/utils/toast";
 import { Plus, Trash2, Edit } from "lucide-react";
-import { useMockAuth } from "@/hooks/use-mock-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
 import { Navigate } from "react-router-dom";
 
 interface Course {
-  id: string;
+  id: number;
+  code: string;
   name: string;
   instructor: string;
   capacity: number;
 }
 
-const initialMockCourses: Course[] = [
-  { id: "CS101", name: "Introduction to Programming", instructor: "Dr. Smith", capacity: 50 },
-  { id: "MA205", name: "Calculus III", instructor: "Prof. Jones", capacity: 40 },
-  { id: "DS310", name: "Distributed Systems", instructor: "Dr. Dyad", capacity: 30 },
-];
-
 const FacultyCourseManagement = () => {
-  const { userRole } = useMockAuth();
-  const [courses, setCourses] = useState<Course[]>(initialMockCourses);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [formState, setFormState] = useState<Course>({
-    id: "",
+  const { userRole } = useAuth();
+  const qc = useQueryClient();
+  const { data: coursesData, isLoading } = useQuery({ 
+    queryKey: ['courses'], 
+    queryFn: async () => {
+      const res = await api.apiFetch('/api/courses');
+      if (!res.ok) throw new Error('Failed to load courses');
+      return res.json();
+    }
+  });
+  const [formState, setFormState] = useState<Omit<Course, 'id'>>({
+    code: "",
     name: "",
     instructor: "",
     capacity: 0,
   });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   // Redirect if not Course Audit Admin
   if (userRole !== "course_audit_admin") {
@@ -44,9 +49,9 @@ const FacultyCourseManagement = () => {
 
   React.useEffect(() => {
     if (editingCourse) {
-      setFormState(editingCourse);
+      setFormState({ code: editingCourse.code, name: editingCourse.name, instructor: editingCourse.instructor, capacity: editingCourse.capacity });
     } else {
-      setFormState({ id: "", name: "", instructor: "", capacity: 0 });
+      setFormState({ code: "", name: "", instructor: "", capacity: 0 });
     }
   }, [editingCourse]);
 
@@ -61,36 +66,47 @@ const FacultyCourseManagement = () => {
   const handleSaveCourse = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formState.id || !formState.name || !formState.instructor || formState.capacity <= 0) {
+    if (!formState.code || !formState.name || !formState.instructor || formState.capacity <= 0) {
       showError("Please fill in all fields correctly.");
       return;
     }
-    
-    const courseToSave = { ...formState, capacity: Number(formState.capacity) };
 
-    if (editingCourse) {
-      // Edit existing course
-      setCourses(courses.map(c => c.id === editingCourse.id ? courseToSave : c));
-      showSuccess(`Course ${formState.id} updated successfully! (Mock Action)`);
-    } else {
-      // Add new course
-      if (courses.some(c => c.id === formState.id)) {
-        showError(`Course ID ${formState.id} already exists.`);
-        return;
+    (async () => {
+      try {
+        if (editingCourse) {
+          const res = await api.apiFetch(`/api/courses/${editingCourse.id}`, { 
+            method: 'PUT', 
+            body: JSON.stringify({ code: formState.code, name: formState.name, instructor: formState.instructor, capacity: formState.capacity }) 
+          });
+          if (!res.ok) { showError('Failed to update course'); return; }
+          showSuccess(`Course ${formState.code} updated successfully!`);
+        } else {
+          const res = await api.apiFetch('/api/courses', { 
+            method: 'POST', 
+            body: JSON.stringify({ code: formState.code, name: formState.name, instructor: formState.instructor, capacity: formState.capacity }) 
+          });
+          if (!res.ok) { showError('Failed to create course'); return; }
+          showSuccess(`Course ${formState.code} added successfully!`);
+        }
+        setIsDialogOpen(false);
+        setEditingCourse(null);
+        qc.invalidateQueries({ queryKey: ['courses'] });
+      } catch (err) {
+        showError('Failed to save course');
       }
-      setCourses([...courses, courseToSave]);
-      showSuccess(`Course ${formState.id} added successfully! (Mock Action)`);
-    }
-
-    setIsDialogOpen(false);
-    setEditingCourse(null);
+    })();
   };
 
-  const handleDeleteCourse = (courseId: string) => {
-    if (confirm(`Are you sure you want to delete course ${courseId}?`)) {
-      setCourses(courses.filter(c => c.id !== courseId));
-      showSuccess(`Course ${courseId} deleted successfully! (Mock Action)`);
-    }
+  const handleDeleteCourse = (courseId: number) => {
+    (async () => {
+      if (!confirm(`Are you sure you want to delete this course?`)) return;
+      try {
+        const res = await api.apiFetch(`/api/courses/${courseId}`, { method: 'DELETE' });
+        if (!res.ok) { showError('Failed to delete course'); return; }
+        showSuccess(`Course deleted successfully!`);
+        qc.invalidateQueries({ queryKey: ['courses'] });
+      } catch (err) { showError('Failed to delete course'); }
+    })();
   };
 
   const openAddDialog = () => {
@@ -102,6 +118,11 @@ const FacultyCourseManagement = () => {
     setEditingCourse(course);
     setIsDialogOpen(true);
   };
+
+  if (userRole !== 'course_audit_admin') {
+    showError('Access Denied: Only Course Audit Admins can manage the course catalog.');
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <Layout>
@@ -125,12 +146,12 @@ const FacultyCourseManagement = () => {
               <form onSubmit={handleSaveCourse}>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="id" className="text-right">
-                      Course ID
+                    <Label htmlFor="code" className="text-right">
+                      Course Code
                     </Label>
                     <Input
-                      id="id"
-                      value={formState.id}
+                      id="code"
+                      value={formState.code}
                       onChange={handleFormChange}
                       className="col-span-3"
                       required
@@ -187,7 +208,7 @@ const FacultyCourseManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead className="w-[100px]">Code</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Instructor</TableHead>
                 <TableHead className="text-right">Capacity</TableHead>
@@ -197,7 +218,7 @@ const FacultyCourseManagement = () => {
             <TableBody>
               {courses.map((course) => (
                 <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.id}</TableCell>
+                  <TableCell className="font-medium">{course.code}</TableCell>
                   <TableCell>{course.name}</TableCell>
                   <TableCell>{course.instructor}</TableCell>
                   <TableCell className="text-right">{course.capacity}</TableCell>

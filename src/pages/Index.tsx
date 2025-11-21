@@ -1,11 +1,11 @@
 import Layout from "@/components/Layout";
-import { useMockAuth } from "@/hooks/use-mock-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
-  const { userRole } = useMockAuth();
+  const { userRole } = useAuth();
 
   let title = "Welcome to the Distributed Grade System";
   let description = "Please log in to access your features.";

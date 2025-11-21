@@ -6,21 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Layout from "@/components/Layout";
-import { useMockAuth, UserRole } from "@/hooks/use-mock-auth";
-import { showSuccess } from "@/utils/toast";
+import { useAuth } from "@/hooks/use-auth";
+import { showSuccess, showError } from "@/utils/toast";
+
+type UserRole = "unauthenticated" | "student" | "faculty" | "course_audit_admin";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useMockAuth();
-  const [selectedRole, setSelectedRole] = useState<UserRole>("student");
+  const { login } = useAuth();
+  const [idValue, setIdValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, we would validate credentials here.
-    // For now, we simulate a successful login based on the selected role.
-    login(selectedRole);
-    showSuccess(`Successfully logged in as ${selectedRole}!`);
-    navigate("/");
+    try {
+      const ok = await login(idValue, passwordValue);
+      if (!ok) {
+        showError('Login failed. Check credentials.');
+        return;
+      }
+      showSuccess('Logged in successfully');
+      navigate('/');
+    } catch (err) {
+      showError('Login failed');
+    }
   };
 
   return (
@@ -37,27 +46,11 @@ const Login = () => {
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="id">Student/Faculty ID</Label>
-                <Input id="id" type="text" placeholder="e.g., 12345 or F9876" required />
+                <Input id="id" type="text" placeholder="e.g., student1" required value={idValue} onChange={(e) => setIdValue(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="role">Simulate Role</Label>
-                <Select
-                  value={selectedRole}
-                  onValueChange={(value: UserRole) => setSelectedRole(value)}
-                >
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="Select Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="faculty">Faculty</SelectItem>
-                    <SelectItem value="course_audit_admin">Course Audit Admin</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input id="password" type="password" required value={passwordValue} onChange={(e) => setPasswordValue(e.target.value)} />
               </div>
             </CardContent>
             <CardFooter>

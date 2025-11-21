@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 import { Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import api from '@/lib/api';
 
 interface GradeEntry {
   id: number;
@@ -15,14 +17,36 @@ interface GradeEntry {
   grade: string;
 }
 
-const mockFacultyCourses = [
-  { id: "CS101", name: "Introduction to Programming" },
-  { id: "DS310", name: "Distributed Systems" },
-];
+interface Course {
+  id: number;
+  code: string;
+  name: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
+async function fetchCourses() {
+  const res = await api.apiFetch('/api/courses');
+  if (!res.ok) throw new Error('Failed to fetch courses');
+  return res.json();
+}
+
+async function fetchUsers() {
+  const res = await api.apiFetch('/api/users');
+  if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json();
+}
 
 let nextId = 0;
 
 const GradeUpload = () => {
+  const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: fetchCourses });
+  const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
   const [selectedCourse, setSelectedCourse] = useState<string | undefined>(undefined);
   const [gradeEntries, setGradeEntries] = useState<GradeEntry[]>([
     { id: nextId++, studentName: "", studentId: "", grade: "" },
@@ -42,6 +66,14 @@ const GradeUpload = () => {
     ));
   };
 
+  const handleStudentSelect = (id: number, username: string) => {
+    setGradeEntries(gradeEntries.map(entry =>
+      entry.id === id 
+        ? { ...entry, studentName: username, studentId: String(id) } 
+        : entry
+    ));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourse) {
@@ -58,15 +90,21 @@ const GradeUpload = () => {
       return;
     }
 
-    console.log("Submitting grades for course:", selectedCourse);
-    console.log("Grade Data:", validEntries);
-    
-    // Mock submission logic
-    showSuccess(`Grades for ${selectedCourse} submitted successfully! (Mock Action)`);
-    
-    // Reset form after submission
-    setSelectedCourse(undefined);
-    setGradeEntries([{ id: nextId++, studentName: "", studentId: "", grade: "" }]);
+    (async () => {
+      try {
+        const payload = { entries: validEntries.map(v => ({ studentId: v.studentId, grade: v.grade })) };
+        const res = await api.apiFetch(`/api/faculty/courses/${selectedCourse}/grades`, { method: 'POST', body: JSON.stringify(payload) });
+        if (!res.ok) {
+          showError('Failed to upload grades');
+          return;
+        }
+        showSuccess(`Grades submitted successfully!`);
+        setSelectedCourse(undefined);
+        setGradeEntries([{ id: nextId++, studentName: "", studentId: "", grade: "" }]);
+      } catch (err) {
+        showError('Failed to upload grades');
+      }
+    })();
   };
 
   return (
@@ -90,9 +128,9 @@ const GradeUpload = () => {
                   <SelectValue placeholder="Choose a course to upload grades for" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockFacultyCourses.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.id} - {course.name}
+                  {(courses as Course[]).map((course) => (
+                    <SelectItem key={course.id} value={String(course.id)}>
+                      {course.code} - {course.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -112,19 +150,33 @@ const GradeUpload = () => {
               {gradeEntries.map((entry, index) => (
                 <div key={entry.id} className="grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-5">
-                    <Input
-                      placeholder="Student Name"
-                      value={entry.studentName}
-                      onChange={(e) => handleInputChange(entry.id, 'studentName', e.target.value)}
-                      required
-                    />
+                    <Select 
+                      value={entry.studentId} 
+                      onValueChange={(userId) => {
+                        const user = (users as User[]).find(u => String(u.id) === userId);
+                        if (user) {
+                          handleStudentSelect(entry.id, user.username);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select student" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(users as User[]).map((user) => (
+                          <SelectItem key={user.id} value={String(user.id)}>
+                            {user.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="col-span-3">
                     <Input
                       placeholder="ID"
                       value={entry.studentId}
-                      onChange={(e) => handleInputChange(entry.id, 'studentId', e.target.value)}
-                      required
+                      readOnly
+                      className="bg-muted"
                     />
                   </div>
                   <div className="col-span-3">

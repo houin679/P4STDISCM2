@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useMockAuth } from "@/hooks/use-mock-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { LogIn, LogOut, BookOpen, GraduationCap, Upload, LayoutList } from "lucide-react";
 
 const Header = () => {
-  const { userRole, logout } = useMockAuth();
+  const { userRole, logout } = useAuth();
 
   const navLinks = [
     {

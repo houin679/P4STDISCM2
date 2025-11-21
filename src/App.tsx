@@ -10,7 +10,7 @@ import Courses from "./pages/Courses";
 import Grades from "./pages/Grades";
 import GradeUpload from "./pages/GradeUpload";
 import FacultyCourseManagement from "./pages/FacultyCourseManagement";
-import { MockAuthProvider } from "./hooks/use-mock-auth";
+import { AuthProvider } from "./hooks/use-auth";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +20,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <MockAuthProvider>
+          <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -31,7 +31,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </MockAuthProvider>
+          </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
