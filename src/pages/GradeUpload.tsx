@@ -26,9 +26,9 @@ interface Course {
 interface User {
   id: number;
   username: string;
-  email: string;
-  role: string;
 }
+
+let nextId = 0;
 
 async function fetchCourses() {
   const res = await api.apiFetch('/api/courses');
@@ -42,11 +42,10 @@ async function fetchUsers() {
   return res.json();
 }
 
-let nextId = 0;
-
 const GradeUpload = () => {
   const { data: courses = [] } = useQuery({ queryKey: ['courses'], queryFn: fetchCourses });
   const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
+
   const [selectedCourse, setSelectedCourse] = useState<string | undefined>(undefined);
   const [gradeEntries, setGradeEntries] = useState<GradeEntry[]>([
     { id: nextId++, studentName: "", studentId: "", grade: "" },
@@ -61,44 +60,58 @@ const GradeUpload = () => {
   };
 
   const handleInputChange = (id: number, field: keyof Omit<GradeEntry, 'id'>, value: string) => {
-    setGradeEntries(gradeEntries.map(entry => 
+    setGradeEntries(gradeEntries.map(entry =>
       entry.id === id ? { ...entry, [field]: value } : entry
     ));
   };
 
-  const handleStudentSelect = (id: number, username: string) => {
+  const handleStudentSelect = (id: number, username: string, userId: number) => {
     setGradeEntries(gradeEntries.map(entry =>
-      entry.id === id 
-        ? { ...entry, studentName: username, studentId: String(id) } 
-        : entry
+      entry.id === id ? { ...entry, studentName: username, studentId: String(userId) } : entry
     ));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!selectedCourse) {
-      alert("Please select a course.");
+      showError("Please select a course.");
       return;
     }
-    
-    const validEntries = gradeEntries.filter(entry => 
+
+    const validEntries = gradeEntries.filter(entry =>
       entry.studentName.trim() && entry.studentId.trim() && entry.grade.trim()
     );
 
     if (validEntries.length === 0) {
-      alert("Please enter at least one complete grade entry.");
+      showError("Please enter at least one complete grade entry.");
       return;
     }
 
     (async () => {
       try {
-        const payload = { entries: validEntries.map(v => ({ studentId: v.studentId, grade: v.grade })) };
-        const res = await api.apiFetch(`/api/faculty/courses/${selectedCourse}/grades`, { method: 'POST', body: JSON.stringify(payload) });
+        const payload = {
+          entries: validEntries.map(v => ({
+            student_id: Number(v.studentId),
+            grade_value: v.grade
+          }))
+        };
+
+        const res = await api.apiFetch(
+          `/api/faculty/courses/${Number(selectedCourse)}/grades`,
+          {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+
         if (!res.ok) {
           showError('Failed to upload grades');
           return;
         }
-        showSuccess(`Grades submitted successfully!`);
+
+        showSuccess("Grades submitted successfully!");
         setSelectedCourse(undefined);
         setGradeEntries([{ id: nextId++, studentName: "", studentId: "", grade: "" }]);
       } catch (err) {
@@ -115,20 +128,22 @@ const GradeUpload = () => {
           <CardTitle>Upload Grades</CardTitle>
           <CardDescription>Select a course and enter student grades below.</CardDescription>
         </CardHeader>
+
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
+            {/* Course Selection */}
             <div className="grid gap-2">
               <Label htmlFor="course-select">Select Course</Label>
-              <Select 
-                required 
-                value={selectedCourse} 
+              <Select
+                required
+                value={selectedCourse}
                 onValueChange={setSelectedCourse}
               >
                 <SelectTrigger id="course-select">
                   <SelectValue placeholder="Choose a course to upload grades for" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(courses as Course[]).map((course) => (
+                  {courses.map((course: Course) => (
                     <SelectItem key={course.id} value={String(course.id)}>
                       {course.code} - {course.name}
                     </SelectItem>
@@ -137,26 +152,24 @@ const GradeUpload = () => {
               </Select>
             </div>
 
+            {/* Grade Entries */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Grade Data Entries</h3>
-              
+              <h3 className="text-lg font-semibold border-b pb-2">Grade Entries</h3>
               <div className="grid grid-cols-12 gap-4 font-medium text-sm text-muted-foreground pb-2 border-b">
                 <div className="col-span-5">Student Name</div>
                 <div className="col-span-3">Student ID</div>
-                <div className="col-span-3">Grade (e.g., A, B+, C-)</div>
-                <div className="col-span-1"></div> {/* Action column */}
+                <div className="col-span-3">Grade</div>
+                <div className="col-span-1"></div>
               </div>
 
-              {gradeEntries.map((entry, index) => (
+              {gradeEntries.map((entry) => (
                 <div key={entry.id} className="grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-5">
-                    <Select 
-                      value={entry.studentId} 
+                    <Select
+                      value={entry.studentId}
                       onValueChange={(userId) => {
                         const user = (users as User[]).find(u => String(u.id) === userId);
-                        if (user) {
-                          handleStudentSelect(entry.id, user.username);
-                        }
+                        if (user) handleStudentSelect(entry.id, user.username, user.id);
                       }}
                     >
                       <SelectTrigger>
@@ -171,14 +184,11 @@ const GradeUpload = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="col-span-3">
-                    <Input
-                      placeholder="ID"
-                      value={entry.studentId}
-                      readOnly
-                      className="bg-muted"
-                    />
+                    <Input value={entry.studentId} readOnly className="bg-muted" />
                   </div>
+
                   <div className="col-span-3">
                     <Input
                       placeholder="Grade"
@@ -187,30 +197,25 @@ const GradeUpload = () => {
                       required
                     />
                   </div>
+
                   <div className="col-span-1 flex justify-end">
                     {gradeEntries.length > 1 && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        type="button"
-                        onClick={() => handleRemoveEntry(entry.id)}
-                      >
+                      <Button variant="ghost" size="icon" type="button" onClick={() => handleRemoveEntry(entry.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
                   </div>
                 </div>
               ))}
-              
+
               <Button type="button" variant="secondary" onClick={handleAddEntry} className="w-full mt-4">
                 Add Another Student
               </Button>
             </div>
           </CardContent>
+
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Submit Grades to Node
-            </Button>
+            <Button type="submit" className="w-full">Submit Grades</Button>
           </CardFooter>
         </form>
       </Card>

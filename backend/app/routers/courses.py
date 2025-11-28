@@ -47,12 +47,12 @@ def delete_course(course_id: int, db: Session = Depends(get_db)):
     return {"deleted": True}
 
 
-@router.post("/{course_id}/enroll")
-def enroll(course_id: int, student_id: int = None, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    """Enroll a student in a course. The `student_id` is optional and if omitted the requester's id is used.
+# @router.post("/{course_id}/enroll")
+# def enroll(course_id: int, student_id: int = None, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+#     """Enroll a student in a course. The `student_id` is optional and if omitted the requester's id is used.
 
-    In the real app, use the authenticated user (current_user) for student enrollment rather than passing an id.
-    """
-    sid = student_id or current_user.id
-    enrollment = crud.enroll_student(db, student_id=sid, course_id=course_id)
-    return {"enrolled": True, "id": enrollment.id}
+#     In the real app, use the authenticated user (current_user) for student enrollment rather than passing an id.
+#     """
+#     sid = student_id or current_user.id
+#     enrollment = crud.enroll_student(db, student_id=sid, course_id=course_id)
+#     return {"enrolled": True, "id": enrollment.id}

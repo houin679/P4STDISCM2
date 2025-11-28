@@ -24,7 +24,7 @@ interface Course {
 const FacultyCourseManagement = () => {
   const { userRole } = useAuth();
   const qc = useQueryClient();
-  const { data: coursesData, isLoading } = useQuery({ 
+  const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses'], 
     queryFn: async () => {
       const res = await api.apiFetch('/api/courses');

@@ -68,6 +68,8 @@ class GradeRead(BaseModel):
     course_id: int
     grade_value: str
     semester: Optional[str]
+    uploaded_by: int | None = None
+    uploaded_at: datetime
 
     class Config:
         orm_mode = True

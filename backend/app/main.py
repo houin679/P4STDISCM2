@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
 from .config import CORS_ORIGINS
-from .routers import auth, courses, grades, users
+from .routers import auth, courses, grades, users, student_grades, student
 
 app = FastAPI(title="P4STDISCM2 Backend")
 
@@ -28,7 +28,8 @@ app.include_router(auth.router)
 app.include_router(courses.router)
 app.include_router(grades.router)
 app.include_router(users.router)
-
+app.include_router(student.router)
+app.include_router(student_grades.router)
 
 @app.get("/")
 def root():

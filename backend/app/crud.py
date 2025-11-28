@@ -163,30 +163,35 @@ def enroll_student(db: Session, student_id: int, course_id: int):
     return enrollment
 
 
-# Grades
-def upload_grades(db: Session, course_id: int, entries: List[dict], uploaded_by: int = None):
-    created = []
-    for e in entries:
-        # expecting studentId and grade
-        student_identifier = e.get("studentId") or e.get("student_id")
-        grade_val = e.get("grade") or e.get("grade_value")
-        # find student by username or id
-        student = None
-        if student_identifier is None:
-            continue
-        if str(student_identifier).isdigit():
-            student = db.query(models.User).filter(models.User.id == int(student_identifier)).first()
+def upload_grades(db: Session, course_id: int, entries: list[dict], uploaded_by: int):
+    result_grades = []
+
+    for entry in entries:
+        grade = (
+            db.query(models.Grade)
+            .filter(models.Grade.student_id == entry["student_id"],
+                    models.Grade.course_id == course_id)
+            .first()
+        )
+
+        if grade:
+            # Update existing grade
+            grade.grade_value = entry["grade_value"]
+            grade.uploaded_by = uploaded_by
         else:
-            student = db.query(models.User).filter(models.User.username == str(student_identifier)).first()
-        if not student:
-            continue
-        g = models.Grade(student_id=student.id, course_id=course_id, grade_value=grade_val, uploaded_by=uploaded_by)
-        db.add(g)
-        created.append(g)
+            # Create new grade
+            grade = models.Grade(
+                student_id=entry["student_id"],
+                course_id=course_id,
+                grade_value=entry["grade_value"],
+                uploaded_by=uploaded_by
+            )
+            db.add(grade)
+
+        result_grades.append(grade)
+
     db.commit()
-    for g in created:
-        db.refresh(g)
-    return created
+    return result_grades
 
 
 def get_grades_for_student(db: Session, student_id: int):
