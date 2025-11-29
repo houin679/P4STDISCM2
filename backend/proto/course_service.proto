@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package courseservice;
+
+service CourseService {
+  // List all courses
+  rpc ListCourses(Empty) returns (CoursesResponse);
+  
+  // Get a specific course
+  rpc GetCourse(CourseRequest) returns (CourseRecord);
+  
+  // Create a new course
+  rpc CreateCourse(CourseCreateRequest) returns (CourseRecord);
+  
+  // Update an existing course
+  rpc UpdateCourse(CourseUpdateRequest) returns (CourseRecord);
+  
+  // Delete a course
+  rpc DeleteCourse(CourseRequest) returns (DeleteResponse);
+}
+
+message Empty {}
+
+message CourseRequest {
+  int32 course_id = 1;
+}
+
+message CourseRecord {
+  int32 id = 1;
+  string code = 2;
+  string name = 3;
+  string instructor = 4;
+  int32 capacity = 5;
+  int64 created_at = 6;
+}
+
+message CoursesResponse {
+  repeated CourseRecord courses = 1;
+  int32 count = 2;
+}
+
+message CourseCreateRequest {
+  string code = 1;
+  string name = 2;
+  string instructor = 3;
+  int32 capacity = 4;
+}
+
+message CourseUpdateRequest {
+  int32 id = 1;
+  string code = 2;
+  string name = 3;
+  string instructor = 4;
+  int32 capacity = 5;
+}
+
+message DeleteResponse {
+  bool success = 1;
+  string message = 2;
+}

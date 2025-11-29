@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package userservice;
+
+service UserService {
+  // Authenticate a user
+  rpc AuthenticateUser(AuthRequest) returns (AuthResponse);
+  
+  // Get a specific user
+  rpc GetUser(UserRequest) returns (UserRecord);
+  
+  // List all users
+  rpc ListUsers(Empty) returns (UsersResponse);
+  
+  // Create a new user
+  rpc CreateUser(CreateUserRequest) returns (UserRecord);
+}
+
+message Empty {}
+
+message AuthRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool success = 1;
+  UserRecord user = 2;
+  string token = 3;
+  string message = 4;
+}
+
+message UserRequest {
+  int32 user_id = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string role = 4;
+}
+
+message UserRecord {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  int64 created_at = 5;
+}
+
+message UsersResponse {
+  repeated UserRecord users = 1;
+  int32 count = 2;
+}
