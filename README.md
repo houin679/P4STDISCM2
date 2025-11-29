@@ -1,4 +1,3 @@
-# Welcome to your Dyad app
 
 ## To install dependencies, using pnpm is recommended, but npm will work too
 
@@ -29,6 +28,7 @@ run this on a separate console from the frontend
    - `python backend\scripts\seed.py`
 4. Start the backend server
    - `uvicorn backend.app.main:app --reload --port 8501`
+
 
 
 
