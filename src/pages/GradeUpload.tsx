@@ -107,15 +107,23 @@ const GradeUpload = () => {
         );
 
         if (!res.ok) {
-          showError('Failed to upload grades');
+          try {
+            const errData = await res.json();
+            if (errData?.detail) {
+              showError(errData.detail);
+            } else {
+              showError("Failed to upload grades");
+            }
+          } catch {
+            showError("Failed to upload grades");
+          }
           return;
         }
 
         showSuccess("Grades submitted successfully!");
-        setSelectedCourse(undefined);
         setGradeEntries([{ id: nextId++, studentName: "", studentId: "", grade: "" }]);
-      } catch (err) {
-        showError('Failed to upload grades');
+      } catch (err: any) {
+        showError(err?.message || "Failed to upload grades");
       }
     })();
   };

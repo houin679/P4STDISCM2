@@ -39,18 +39,31 @@ const Courses = () => {
       });
 
       if (!res.ok) {
-        showError("Enroll failed");
+        // Read backend error if available
+        let message = "Enroll failed.";
+
+        try {
+          const err = await res.json();
+          if (err?.detail) {
+            message = err.detail;
+          }
+        } catch (_) {
+          // ignore JSON parse failure and keep default error message
+        }
+
+        showError(message);
         return;
       }
 
       showSuccess(`Successfully enrolled in ${courseName}!`);
-
       // refetch the course list
       qc.invalidateQueries({ queryKey: ["student_courses"] });
+
     } catch (e) {
       showError("Enroll failed");
     }
   };
+
 
   return (
     <Layout>

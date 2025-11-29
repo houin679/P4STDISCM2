@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from jose import jwt
 from typing import List
+from fastapi import HTTPException
 from . import models, schemas, config
 import secrets
 import hashlib
@@ -155,7 +156,19 @@ def delete_course(db: Session, course_id: int) -> bool:
 
 
 # Enrollment
-def enroll_student(db: Session, student_id: int, course_id: int):
+def enroll_student(db, student_id, course_id):
+    # Check if already enrolled
+    existing = db.query(models.Enrollment).filter(
+        models.Enrollment.student_id == student_id,
+        models.Enrollment.course_id == course_id
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Student is already enrolled in this course."
+        )
+
     enrollment = models.Enrollment(student_id=student_id, course_id=course_id)
     db.add(enrollment)
     db.commit()
@@ -167,6 +180,18 @@ def upload_grades(db: Session, course_id: int, entries: list[dict], uploaded_by:
     result_grades = []
 
     for entry in entries:
+
+        enrolled = db.query(models.Enrollment).filter(
+            models.Enrollment.student_id == entry["student_id"],
+            models.Enrollment.course_id == course_id
+        ).first()
+
+        if not enrolled:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot upload grade: student {entry['student_id']} is not enrolled in this course."
+            )
+
         grade = (
             db.query(models.Grade)
             .filter(models.Grade.student_id == entry["student_id"],
