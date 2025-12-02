@@ -1,10 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { LogIn, LogOut, BookOpen, GraduationCap, Upload, LayoutList } from "lucide-react";
 
 const Header = () => {
   const { userRole, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const navLinks = [
     {
@@ -59,7 +65,7 @@ const Header = () => {
               </Link>
             </Button>
           ) : (
-            <Button variant="outline" onClick={logout} className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleLogout} className="flex items-center gap-2">
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
