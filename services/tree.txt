@@ -1,0 +1,76 @@
+Folder PATH listing
+Volume serial number is 063F-57F4
+C:.
+¦   tree.txt
+¦   __init__.py
+¦   
++---api_gateway
+¦   ¦   .env
+¦   ¦   .env.example
+¦   ¦   
+¦   +---app
+¦   ¦   ¦   config.py
+¦   ¦   ¦   crud.py
+¦   ¦   ¦   database.py
+¦   ¦   ¦   deps.py
+¦   ¦   ¦   main.py
+¦   ¦   ¦   models.py
+¦   ¦   ¦   schemas.py
+¦   ¦   ¦   __init__.py
+¦   ¦   ¦   
+¦   ¦   +---routers
+¦   ¦   ¦   ¦   auth.py
+¦   ¦   ¦   ¦   courses.py
+¦   ¦   ¦   ¦   grades.py
+¦   ¦   ¦   ¦   student.py
+¦   ¦   ¦   ¦   student_grades.py
+¦   ¦   ¦   ¦   users.py
+¦   ¦   ¦   ¦   
+¦   ¦   ¦   +---__pycache__
+¦   ¦   ¦           auth.cpython-314.pyc
+¦   ¦   ¦           courses.cpython-314.pyc
+¦   ¦   ¦           grades.cpython-314.pyc
+¦   ¦   ¦           student.cpython-314.pyc
+¦   ¦   ¦           student_grades.cpython-314.pyc
+¦   ¦   ¦           users.cpython-314.pyc
+¦   ¦   ¦           
+¦   ¦   +---__pycache__
+¦   ¦           config.cpython-314.pyc
+¦   ¦           crud.cpython-314.pyc
+¦   ¦           database.cpython-314.pyc
+¦   ¦           deps.cpython-314.pyc
+¦   ¦           main.cpython-314.pyc
+¦   ¦           models.cpython-314.pyc
+¦   ¦           schemas.cpython-314.pyc
+¦   ¦           __init__.cpython-314.pyc
+¦   ¦           
+¦   +---scripts
+¦       ¦   create_users.py
+¦       ¦   seed.py
+¦       ¦   
+¦       +---__pycache__
+¦               seed.cpython-314.pyc
+¦               
++---auth_service
+¦       service.py
+¦       __init__.py
+¦       
++---course_service
+¦       service.py
+¦       __init__.py
+¦       
++---database
+¦       dev.db
+¦       
++---enrollment_service
+¦       service.py
+¦       __init__.py
+¦       
++---grades_service
+¦       service.py
+¦       __init__.py
+¦       
++---__pycache__
+        auth_pb2.cpython-314.pyc
+        __init__.cpython-314.pyc
+        

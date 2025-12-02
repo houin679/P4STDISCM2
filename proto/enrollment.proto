@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package enrollment_service;
+
+// Message representing a Course
+message Course {
+    int32 id = 1;
+    string code = 2;
+    string name = 3;
+    string instructor = 4;
+    int32 capacity = 5;
+}
+
+// Empty message for requests that require no input
+message Empty {}
+
+// Request message for enrolling a student in a course
+message EnrollStudentRequest {
+    int32 student_id = 1;
+    int32 course_id = 2;
+}
+
+// Response for enrolling a student
+message EnrollStudentResponse {
+    bool enrolled = 1;
+}
+
+// Response for listing courses
+message ListCoursesResponse {
+    repeated Course courses = 1;
+}
+
+// gRPC service definition
+service EnrollmentService {
+    rpc ListCourses(Empty) returns (ListCoursesResponse);
+    rpc EnrollStudent(EnrollStudentRequest) returns (EnrollStudentResponse);
+}

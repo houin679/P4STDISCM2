@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package users;
+
+// --- Messages ---
+
+message UserRead {
+    int32 id = 1;
+    string username = 2;
+    string email = 3;
+    string role = 4;
+    bool is_active = 5;
+    string created_at = 6;  // ISO datetime string
+}
+
+message UserCreate {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+    string role = 4; // optional, default student
+}
+
+message UserUpdate {
+    int32 id = 1;
+    string email = 2;
+    string role = 3;
+    bool is_active = 4;
+}
+
+message GetUserRequest {
+    int32 user_id = 1;
+}
+
+message ListUsersRequest {
+    // optional filters in the future
+}
+
+message ListUsersResponse {
+    repeated UserRead users = 1;
+}
+
+message CreateUserResponse {
+    UserRead user = 1;
+}
+
+message UpdateUserRequest {
+    UserUpdate user = 1;
+}
+
+message UpdateUserResponse {
+    UserRead user = 1;
+}
+
+message DeleteUserRequest {
+    int32 user_id = 1;
+}
+
+message DeleteUserResponse {
+    bool deleted = 1;
+}
+
+// --- Service ---
+
+service UsersService {
+    rpc GetUser(GetUserRequest) returns (UserRead);
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+    rpc CreateUser(UserCreate) returns (CreateUserResponse);
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+}

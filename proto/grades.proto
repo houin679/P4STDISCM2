@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package grades;
+
+// --- Shared Messages ---
+
+// A single grade entry provided during upload
+message GradeEntry {
+    int32 student_id = 1;
+    string grade_value = 2;
+}
+
+// Upload payload: list of grade entries
+message GradeUpload {
+    repeated GradeEntry entries = 1;
+}
+
+// A stored grade returned to the frontend
+message GradeRead {
+    int32 id = 1;
+    int32 student_id = 2;
+    int32 course_id = 3;
+    string grade_value = 4;
+    string semester = 5;       // optional
+    int32 uploaded_by = 6;     // optional; 0 means null
+    string uploaded_at = 7;    // ISO formatted string
+}
+
+// --- Requests / Responses ---
+
+message UploadGradesRequest {
+    int32 course_id = 1;
+    GradeUpload payload = 2;
+    int32 uploaded_by = 3;
+}
+
+message UploadGradesResponse {
+    int32 created = 1;
+}
+
+message GetGradesRequest {
+    int32 student_id = 1;
+}
+
+message GetGradesResponse {
+    repeated GradeRead grades = 1;
+}
+
+// --- Service ---
+
+service GradesService {
+    rpc UploadGrades(UploadGradesRequest) returns (UploadGradesResponse);
+    rpc GetMyGrades(GetGradesRequest) returns (GetGradesResponse);
+}

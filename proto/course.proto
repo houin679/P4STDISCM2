@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package course_service;
+
+// Message representing a Course
+message Course {
+    int32 id = 1;
+    string code = 2;
+    string name = 3;
+    string instructor = 4;
+    int32 capacity = 5;
+}
+
+// Empty message for endpoints that require no input
+message Empty {}
+
+// Request message for creating a course
+message CourseCreate {
+    string code = 1;
+    string name = 2;
+    string instructor = 3;
+    int32 capacity = 4;
+}
+
+// Request message for updating a course
+message UpdateCourseRequest {
+    int32 course_id = 1;
+    CourseCreate course = 2;
+}
+
+// Request message for deleting a course
+message DeleteCourseRequest {
+    int32 course_id = 1;
+}
+
+// Response for delete operation
+message DeleteCourseResponse {
+    bool deleted = 1;
+}
+
+// Response for listing multiple courses
+message ListCoursesResponse {
+    repeated Course courses = 1;
+}
+
+// gRPC service definition
+service CourseService {
+    rpc ListCourses(Empty) returns (ListCoursesResponse);
+    rpc CreateCourse(CourseCreate) returns (Course);
+    rpc UpdateCourse(UpdateCourseRequest) returns (Course);
+    rpc DeleteCourse(DeleteCourseRequest) returns (DeleteCourseResponse);
+}
+
