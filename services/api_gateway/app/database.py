@@ -3,10 +3,11 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from .config import DATABASE_URL
 
 # For a simple scaffold we use SQLAlchemy synchronous engine.
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
-)
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

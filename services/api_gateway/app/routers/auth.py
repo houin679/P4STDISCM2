@@ -3,14 +3,18 @@ from fastapi.security import OAuth2PasswordRequestForm
 from .. import schemas, config
 import typing
 import grpc
+import os
 
 # gRPC imports
-from services.auth_service import auth_pb2, auth_pb2_grpc
+from proto import auth_pb2, auth_pb2_grpc
+
+AUTH_SERVICE_HOST = os.environ.get("AUTH_SERVICE_HOST", "auth_service")
+AUTH_SERVICE_PORT = os.environ.get("AUTH_SERVICE_PORT", "50050")
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 # gRPC channel + stub
-auth_channel = grpc.insecure_channel("localhost:50050")
+auth_channel = grpc.insecure_channel(f"{AUTH_SERVICE_HOST}:{AUTH_SERVICE_PORT}")
 auth_stub = auth_pb2_grpc.AuthServiceStub(auth_channel)
 
 

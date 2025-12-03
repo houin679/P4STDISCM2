@@ -3,12 +3,16 @@ from typing import List
 from .. import schemas, models
 from ..deps import get_current_user, require_role
 import grpc
-from services.grades_service import grades_pb2, grades_pb2_grpc
+from proto import grades_pb2, grades_pb2_grpc
+import os
+
+GRADES_SERVICE_HOST = os.environ.get("GRADES_SERVICE_HOST", "grades_service")
+GRADES_SERVICE_PORT = os.environ.get("GRADES_SERVICE_PORT", "50053")
 
 router = APIRouter(prefix="/api/faculty", tags=["grades"])
 
 # gRPC channel + stub for grades-service
-grades_channel = grpc.insecure_channel("localhost:50053")
+grades_channel = grpc.insecure_channel(f"{GRADES_SERVICE_HOST}:{GRADES_SERVICE_PORT}")
 grades_stub = grades_pb2_grpc.GradesServiceStub(grades_channel)
 
 

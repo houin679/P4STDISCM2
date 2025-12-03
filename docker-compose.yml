@@ -1,0 +1,112 @@
+version: "3.9"
+
+services:
+  auth_service:
+    build:
+      context: .
+      dockerfile: ./services/auth_service/Dockerfile
+    container_name: auth_service
+    ports:
+      - "50050:50050"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+    networks:
+      - backend
+
+  course_service:
+    build:
+      context: .
+      dockerfile: ./services/course_service/Dockerfile
+    container_name: course_service
+    ports:
+      - "50051:50051"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+    networks:
+      - backend
+
+  enrollment_service:
+    build:
+      context: .
+      dockerfile: ./services/enrollment_service/Dockerfile
+    container_name: enrollment_service
+    ports:
+      - "50052:50052"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+    networks:
+      - backend
+
+  grades_service:
+    build:
+      context: .
+      dockerfile: ./services/grades_service/Dockerfile
+    container_name: grades_service
+    ports:
+      - "50053:50053"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+    networks:
+      - backend
+
+  users_service:
+    build:
+      context: .
+      dockerfile: ./services/users_service/Dockerfile
+    container_name: users_service
+    ports:
+      - "50054:50054"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+    networks:
+      - backend
+
+  api_gateway:
+    build:
+      context: .
+      dockerfile: services/api_gateway/Dockerfile
+    container_name: api_gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth_service
+      - course_service
+      - enrollment_service
+      - grades_service
+      - users_service
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm
+      - AUTH_SERVICE_HOST=auth_service
+      - AUTH_SERVICE_PORT=50050
+      - COURSE_SERVICE_HOST=course_service
+      - COURSE_SERVICE_PORT=50051
+      - ENROLLMENT_SERVICE_HOST=enrollment_service
+      - ENROLLMENT_SERVICE_PORT=50052
+      - GRADES_SERVICE_HOST=grades_service
+      - GRADES_SERVICE_PORT=50053
+      - USERS_SERVICE_HOST=users_service
+      - USERS_SERVICE_PORT=50054
+    networks:
+      - backend
+  
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: p4stdiscm
+      POSTGRES_PASSWORD: p4stdiscm
+      POSTGRES_DB: p4stdiscm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:

@@ -3,10 +3,10 @@ import grpc
 from concurrent import futures
 from sqlalchemy.orm import Session
 
-from . import course_pb2
-from . import course_pb2_grpc
+from proto import course_pb2
+from proto import course_pb2_grpc
 
-from ..api_gateway.app import crud, database
+from api_gateway.app import crud, database
 
 
 class CourseService(course_pb2_grpc.CourseServiceServicer):

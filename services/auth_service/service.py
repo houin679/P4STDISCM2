@@ -8,12 +8,11 @@ from typing import Optional
 from google.protobuf import empty_pb2
 
 # Import generated gRPC code
-from . import auth_pb2
-from . import auth_pb2_grpc
+from proto import auth_pb2, auth_pb2_grpc
 
 
 # Import DB + CRUD from API gateway
-from ..api_gateway.app import crud, database
+from api_gateway.app import crud, database
 
 class AuthService(auth_pb2_grpc.AuthServiceServicer):
 

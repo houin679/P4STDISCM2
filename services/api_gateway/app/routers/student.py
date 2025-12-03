@@ -3,12 +3,16 @@ from typing import List
 from .. import schemas, models
 from ..deps import get_current_user
 import grpc
-from services.enrollment_service import enrollment_pb2, enrollment_pb2_grpc
+from proto import enrollment_pb2, enrollment_pb2_grpc
+import os
+
+ENROLLMENT_SERVICE_HOST = os.environ.get("ENROLLMENT_SERVICE_HOST", "enrollment_service")
+ENROLLMENT_SERVICE_PORT = os.environ.get("ENROLLMENT_SERVICE_PORT", "50052")
 
 router = APIRouter(prefix="/api/student", tags=["student"])
 
 # gRPC channel + stub for enrollment-service
-enroll_channel = grpc.insecure_channel("localhost:50052")
+enroll_channel = grpc.insecure_channel(f"{ENROLLMENT_SERVICE_HOST}:{ENROLLMENT_SERVICE_PORT}")
 enroll_stub = enrollment_pb2_grpc.EnrollmentServiceStub(enroll_channel)
 
 

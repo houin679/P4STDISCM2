@@ -1,26 +1,6 @@
-r"""Seed script for populating the database with sample data.
-
-This script creates sample users (student, faculty, admin) and a sample course.
-It's designed to work when run directly (python backend\scripts\seed.py) or as
-a module (python -m backend.scripts.seed).
-
-Usage:
-    # From repository root, with venv activated:
-    python backend\scripts\seed.py
-    
-    # or using module form (preferred):
-    python -m backend.scripts.seed
-"""
-
 import sys
 from pathlib import Path
 
-# Insert repository root into sys.path so relative imports work.
-# This allows the script to run as:
-#   python backend\scripts\seed.py
-# or:
-#   python -m backend.scripts.seed
-# Without needing the backend package to be installed.
 repo_root = Path(__file__).resolve().parents[2]
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
@@ -28,8 +8,8 @@ if str(repo_root) not in sys.path:
 
 def main():
     """Initialize database and populate with sample data."""
-    from backend.app.database import SessionLocal, init_db
-    from backend.app import crud, schemas
+    from ..app.database import SessionLocal, init_db
+    from ..app import crud, schemas
     
     # Initialize database tables
     print("Initializing database...")
@@ -45,6 +25,18 @@ def main():
             schemas.UserCreate(
                 username="student1",
                 email="student1@example.com",
+                password="pass123",  # Keep passwords short (bcrypt max 72 bytes)
+                role="student"
+            ),
+            schemas.UserCreate(
+                username="student2",
+                email="student2@example.com",
+                password="pass123",  # Keep passwords short (bcrypt max 72 bytes)
+                role="student"
+            ),
+            schemas.UserCreate(
+                username="student3",
+                email="student3@example.com",
                 password="pass123",  # Keep passwords short (bcrypt max 72 bytes)
                 role="student"
             ),
@@ -74,7 +66,7 @@ def main():
         
         # Create sample course
         print("\nCreating sample course...")
-        from backend.app.models import Course
+        from ..app.models import Course
         
         course_data = schemas.CourseCreate(
             code="CS101",

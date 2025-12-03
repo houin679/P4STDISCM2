@@ -5,11 +5,11 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 # Generated gRPC code (placed in the same folder by protoc)
-from . import grades_pb2
-from . import grades_pb2_grpc
+from proto import grades_pb2
+from proto import grades_pb2_grpc
 
 # Import DB + CRUD from API gateway
-from ..api_gateway.app import crud, database
+from api_gateway.app import crud, database
 from fastapi import HTTPException
 
 

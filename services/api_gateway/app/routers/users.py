@@ -2,13 +2,17 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from .. import schemas, models
 import grpc
-from services.users_service import users_pb2, users_pb2_grpc
-from ..deps import get_current_user, require_role  # optional if you want role-based access
+from proto import users_pb2, users_pb2_grpc
+from ..deps import get_current_user, require_role  
+import os
+
+USERS_SERVICE_HOST = os.environ.get("USERS_SERVICE_HOST", "users_service")
+USERS_SERVICE_PORT = os.environ.get("USERS_SERVICE_PORT", "50054")
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 # gRPC channel + stub
-users_channel = grpc.insecure_channel("localhost:50054")
+users_channel = grpc.insecure_channel(f"{USERS_SERVICE_HOST}:{USERS_SERVICE_PORT}")
 users_stub = users_pb2_grpc.UsersServiceStub(users_channel)
 
 

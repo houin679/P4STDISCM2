@@ -2,7 +2,14 @@ import os
 from datetime import timedelta
 
 # Load config from environment
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./database/dev.db")
+# SQLite
+# DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:////app/database/dev.db")
+
+# PostgreSQL
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+psycopg2://p4stdiscm:p4stdiscm@postgres:5432/p4stdiscm"
+)
 
 # Secret for JWT - override in production
 SECRET_KEY = os.environ.get("SECRET_KEY", "p4stdiscm-distrib-ft")

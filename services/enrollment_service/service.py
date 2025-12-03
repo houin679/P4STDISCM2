@@ -4,10 +4,10 @@ from concurrent import futures
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from . import enrollment_pb2
-from . import enrollment_pb2_grpc
+from proto import enrollment_pb2
+from proto import enrollment_pb2_grpc
 
-from ..api_gateway.app import crud, database
+from api_gateway.app import crud, database
 from fastapi import HTTPException
 
 

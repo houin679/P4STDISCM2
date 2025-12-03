@@ -7,6 +7,7 @@ SQLAlchemy>=2.0.0
 alembic>=1.11.0
 # For SQLite (local dev), no psycopg needed. Remove if unused.
 psycopg[binary]>=3.1.0; extra == 'pg'
+psycopg2-binary>=2.9
 
 # --- Pydantic, Validation & Parsing ---
 pydantic>=2.0.0

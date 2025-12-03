@@ -5,17 +5,17 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 # Generated gRPC code
-from . import users_pb2
-from . import users_pb2_grpc
+from proto import users_pb2
+from proto import users_pb2_grpc
 
 # Import DB + CRUD from API gateway
-from ..api_gateway.app import crud, database
+from api_gateway.app import crud, database
 from fastapi import HTTPException
 
 
 class UsersService(users_pb2_grpc.UsersServiceServicer):
 
-    def CreateUser(self, request: users_pb2.CreateUserRequest, context) -> users_pb2.UserRead:
+    def CreateUser(self, request: users_pb2.UserCreate, context) -> users_pb2.UserRead:
         db: Session = database.SessionLocal()
         try:
             # Prepare input for CRUD

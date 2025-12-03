@@ -3,12 +3,16 @@ from typing import List
 from .. import schemas
 from ..deps import require_role
 import grpc
-from services.course_service import course_pb2, course_pb2_grpc
+from proto import course_pb2, course_pb2_grpc
+import os
+
+COURSE_SERVICE_HOST = os.environ.get("COURSE_SERVICE_HOST", "course_service")
+COURSE_SERVICE_PORT = os.environ.get("COURSE_SERVICE_PORT", "50051")
 
 router = APIRouter(prefix="/api/courses", tags=["courses"])
 
 # gRPC channel + stub
-course_channel = grpc.insecure_channel("localhost:50051")
+course_channel = grpc.insecure_channel(f"{COURSE_SERVICE_HOST}:{COURSE_SERVICE_PORT}")
 course_stub = course_pb2_grpc.CourseServiceStub(course_channel)
 
 
